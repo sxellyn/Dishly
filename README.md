@@ -85,14 +85,13 @@ Dishfy makes use of key mobile platform features:
 - 📶 Internet access (API consumption)
 - 🔔 Push notifications (Firebase Cloud Messaging)
 - 📱 Persistent user data (Firestore)
-- 📷 *(Future)* Camera for ingredient scanning
-
 ---
 
 ## 🌐 External Integrations
 
-- **Spoonacular API** → Recipe search and cost estimation
-- **Edamam API** → Nutritional data
+- **Spoonacular API** → Recipe search
+- **Edamam API** → Food data
+- **MealDB** → Recipe data 
 - **Firebase**:
   - Authentication
   - Firestore Database
