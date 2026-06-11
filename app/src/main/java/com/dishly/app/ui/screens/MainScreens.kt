@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,6 +35,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -205,25 +207,100 @@ fun SearchScreen(
                         color = White,
                         fontWeight = FontWeight.Bold
                     )
-                    FlowRow(
-                        modifier = Modifier.padding(top = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        state.ingredientNames.forEach { name ->
-                            FilterChip(
-                                selected = state.selectedIngredientNames.contains(name),
-                                onClick = { viewModel.toggleIngredient(name) },
-                                label = { Text(name) },
-                                shape = RoundedCornerShape(50),
-                                border = null,
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Magenta,
-                                    selectedLabelColor = White,
-                                    containerColor = White,
-                                    labelColor = PurplePrimary
+                    OutlinedTextField(
+                        value = state.searchQuery,
+                        onValueChange = viewModel::onSearchQueryChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                        placeholder = { Text("Search ingredients…", color = TextGray) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = White,
+                            unfocusedContainerColor = White,
+                            focusedBorderColor = Magenta,
+                            unfocusedBorderColor = White,
+                            cursorColor = PurplePrimary,
+                            focusedTextColor = PurplePrimary,
+                            unfocusedTextColor = PurplePrimary
+                        )
+                    )
+                    if (state.ingredientSuggestions.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(White)
+                        ) {
+                            state.ingredientSuggestions.forEach { suggestion ->
+                                Text(
+                                    text = suggestion,
+                                    color = PurplePrimary,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.selectIngredient(suggestion) }
+                                        .padding(horizontal = 16.dp, vertical = 12.dp)
                                 )
+                                if (suggestion != state.ingredientSuggestions.last()) {
+                                    HorizontalDivider(color = DividerColor)
+                                }
+                            }
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 14.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(White.copy(alpha = 0.2f))
+                            .padding(12.dp)
+                            .heightIn(min = 72.dp)
+                    ) {
+                        Text(
+                            "Selected ingredients:",
+                            color = White,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp
+                        )
+                        if (state.selectedIngredientNames.isEmpty()) {
+                            Text(
+                                "No ingredients selected yet.",
+                                color = White.copy(alpha = 0.75f),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(top = 8.dp)
                             )
+                        } else {
+                            FlowRow(
+                                modifier = Modifier.padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                state.selectedIngredientNames.forEach { name ->
+                                    Row(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(50))
+                                            .background(Magenta)
+                                            .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(name, color = White, fontSize = 13.sp)
+                                        IconButton(
+                                            onClick = { viewModel.removeSelectedIngredient(name) },
+                                            modifier = Modifier.size(28.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                contentDescription = "Remove $name",
+                                                tint = White,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

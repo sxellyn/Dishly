@@ -25,10 +25,10 @@ class EditProfileViewModel : ViewModel() {
     }
 
     fun onNameChange(v: String) { _uiState.value = _uiState.value.copy(name = v) }
-    fun onUsernameChange(v: String) { _uiState.value = _uiState.value.copy(username = v) }
 
     fun save() {
         val state = _uiState.value
+        // Username is unique and cannot be changed; only the display name is editable.
         RecipeRepository.updateUser(state.name, state.username)
         _uiState.value = state.copy(saved = true)
     }

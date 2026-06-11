@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 data class SearchUiState(
     val ingredientNames: List<String> = emptyList(),
+    val searchQuery: String = "",
+    val ingredientSuggestions: List<String> = emptyList(),
     val selectedIngredientNames: Set<String> = emptySet(),
     val emptyFridgeMode: Boolean = false,
     val showResults: Boolean = false,
@@ -25,11 +27,30 @@ class SearchViewModel : ViewModel() {
         )
     }
 
-    /** Visual toggle only — pink chip when selected (API wiring later). */
-    fun toggleIngredient(name: String) {
-        val selected = _uiState.value.selectedIngredientNames.toMutableSet()
-        if (selected.contains(name)) selected.remove(name) else selected.add(name)
-        _uiState.value = _uiState.value.copy(selectedIngredientNames = selected)
+    fun onSearchQueryChange(query: String) {
+        val suggestions = buildSuggestions(query, _uiState.value)
+        _uiState.value = _uiState.value.copy(
+            searchQuery = query,
+            ingredientSuggestions = suggestions
+        )
+    }
+
+    fun selectIngredient(name: String) {
+        val selected = _uiState.value.selectedIngredientNames + name
+        _uiState.value = _uiState.value.copy(
+            selectedIngredientNames = selected,
+            searchQuery = "",
+            ingredientSuggestions = emptyList()
+        )
+    }
+
+    fun removeSelectedIngredient(name: String) {
+        val selected = _uiState.value.selectedIngredientNames - name
+        val suggestions = buildSuggestions(_uiState.value.searchQuery, _uiState.value.copy(selectedIngredientNames = selected))
+        _uiState.value = _uiState.value.copy(
+            selectedIngredientNames = selected,
+            ingredientSuggestions = suggestions
+        )
     }
 
     /** Visual toggle only — pink button when active (API wiring later). */
@@ -48,5 +69,13 @@ class SearchViewModel : ViewModel() {
 
     fun backToPicker() {
         _uiState.value = _uiState.value.copy(showResults = false)
+    }
+
+    private fun buildSuggestions(query: String, state: SearchUiState): List<String> {
+        if (query.isBlank()) return emptyList()
+        val prefix = query.lowercase()
+        return state.ingredientNames.filter { name ->
+            name.lowercase().startsWith(prefix) && !state.selectedIngredientNames.contains(name)
+        }
     }
 }

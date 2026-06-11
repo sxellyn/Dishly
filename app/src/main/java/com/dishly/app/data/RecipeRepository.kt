@@ -167,7 +167,7 @@ object RecipeRepository {
         val recipe = recipeById(recipeId) ?: return null
         val comment = Comment(
             id = (recipe.comments.maxOfOrNull { it.id } ?: 0) + 1,
-            authorName = currentUser.username,
+            authorName = currentUser.name,
             text = text,
             timeLabel = "now"
         )

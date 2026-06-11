@@ -112,12 +112,14 @@ fun DishlyTextField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    enabled: Boolean = true
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
+        enabled = enabled,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
@@ -125,7 +127,10 @@ fun DishlyTextField(
             unfocusedBorderColor = PurplePrimary,
             focusedLabelColor = Magenta,
             unfocusedLabelColor = PurplePrimary,
-            cursorColor = PurplePrimary
+            cursorColor = PurplePrimary,
+            disabledBorderColor = DividerColor,
+            disabledLabelColor = TextGray,
+            disabledTextColor = TextGray
         ),
         singleLine = true,
         visualTransformation = if (isPassword) {
@@ -226,10 +231,9 @@ fun RecipeListItem(recipe: Recipe, onClick: () -> Unit) {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween
+                    .fillMaxHeight()
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         recipe.title,
                         color = PurplePrimary,
@@ -247,12 +251,14 @@ fun RecipeListItem(recipe: Recipe, onClick: () -> Unit) {
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
+                Spacer(Modifier.height(4.dp))
                 Button(
                     onClick = onClick,
                     modifier = Modifier
                         .align(Alignment.End)
-                        .height(32.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                        .width(96.dp)
+                        .height(36.dp),
+                    contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Magenta,
                         contentColor = White

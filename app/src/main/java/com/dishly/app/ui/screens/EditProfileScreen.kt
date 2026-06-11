@@ -79,7 +79,13 @@ fun EditProfileScreen(
             Text("Edit Profile Picture", color = PurplePrimary, fontSize = 13.sp, modifier = Modifier.padding(top = 8.dp))
 
             DishlyTextField(state.name, viewModel::onNameChange, "Name", modifier = Modifier.padding(top = 20.dp))
-            DishlyTextField(state.username, viewModel::onUsernameChange, "Username", modifier = Modifier.padding(top = 12.dp))
+            DishlyTextField(
+                state.username,
+                {},
+                "Username",
+                modifier = Modifier.padding(top = 12.dp),
+                enabled = false
+            )
 
             DishlyPrimaryButton(
                 text = "Save",

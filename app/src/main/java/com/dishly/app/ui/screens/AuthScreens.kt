@@ -44,7 +44,7 @@ fun SignInScreen(
         }
     }
 
-    AuthScaffold(showWelcome = true, onBack = onBack) {
+    AuthScaffold(showWelcome = true, onBack = onBack, scrollable = false) {
         Text("Sign In", color = PurplePrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(20.dp))
         DishlyTextField(state.username, viewModel::onUsernameChange, "Username")
@@ -87,7 +87,7 @@ fun SignInScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             HorizontalDivider(modifier = Modifier.weight(1f), color = DividerColor)
-            Text("Or Sign Up", color = TextGray, modifier = Modifier.padding(horizontal = 12.dp))
+            Text("Don't have an account?", color = TextGray, modifier = Modifier.padding(horizontal = 12.dp))
             HorizontalDivider(modifier = Modifier.weight(1f), color = DividerColor)
         }
         DishlyOutlinedButton(
@@ -115,7 +115,7 @@ fun SignUpScreen(
         }
     }
 
-    AuthScaffold(showWelcome = false, onBack = onBack) {
+    AuthScaffold(showWelcome = false, onBack = onBack, scrollable = true) {
         Text("Sign Up", color = PurplePrimary, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(18.dp))
         DishlyTextField(state.username, viewModel::onUsernameChange, "Username")
@@ -155,6 +155,7 @@ fun SignUpScreen(
 private fun AuthScaffold(
     showWelcome: Boolean,
     onBack: (() -> Unit)?,
+    scrollable: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
@@ -162,7 +163,7 @@ private fun AuthScaffold(
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(PurplePrimary, Magenta)))
             .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
+            .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
             .padding(horizontal = 24.dp)
             .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -185,15 +186,15 @@ private fun AuthScaffold(
                 pink = true,
                 modifier = Modifier
                     .padding(top = 4.dp)
-                    .width(230.dp)
-                    .height(96.dp)
+                    .width(210.dp)
+                    .height(80.dp)
             )
         }
         DishlyLogo(
             variant = LogoVariant.White,
             modifier = Modifier
                 .padding(top = 8.dp)
-                .size(100.dp)
+                .size(if (showWelcome) 64.dp else 100.dp)
         )
         Column(
             modifier = Modifier
