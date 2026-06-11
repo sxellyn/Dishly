@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta extraída do protótipo Figma "DISHLY" -->
+    <color name="purple_primary">#6A2AFF</color>
+    <color name="purple_dark">#4E16C9</color>
+    <color name="purple_light">#8B5CFF</color>
+    <color name="magenta">#FF00FB</color>
+    <color name="magenta_dark">#D400CF</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="text_dark">#222222</color>
+    <color name="text_gray">#7A7A7A</color>
+    <color name="bg_light">#F6F4FF</color>
+    <color name="chip_bg">#EFE8FF</color>
+    <color name="chip_selected">#6A2AFF</color>
+    <color name="card_overlay">#99000000</color>
+    <color name="divider">#E5E0F5</color>
+    <color name="star_yellow">#FFC107</color>
+
+    <!-- Placeholders coloridos para as "fotos" das receitas (app offline, sem rede) -->
+    <color name="food_1">#FF8A65</color>
+    <color name="food_2">#BA68C8</color>
+    <color name="food_3">#4DB6AC</color>
+    <color name="food_4">#F06292</color>
+    <color name="food_5">#9575CD</color>
+    <color name="food_6">#FFB74D</color>
+</resources>

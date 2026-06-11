@@ -4,14 +4,16 @@
 ![Language](https://img.shields.io/badge/language-Kotlin-blue)
 ![Architecture](https://img.shields.io/badge/architecture-MVVM-purple)
 ![UI](https://img.shields.io/badge/UI-Jetpack%20Compose-orange)
-![Backend](https://img.shields.io/badge/backend-Firebase-yellow)
-![API](https://img.shields.io/badge/API-Spoonacular%20%7C%20Edamam-red)
 ![Status](https://img.shields.io/badge/status-in%20development-pink)
 
 Dishly is a mobile application that helps users discover recipes based on the ingredients they already have at home.
 The app focuses on simplifying everyday cooking.
 
 👩‍💻Developed by **Suellyn Gomes**
+
+> ℹ️ **Esta entrega:** app Android nativo em **Kotlin**, arquitetura **MVVM**,
+> UI em **Jetpack Compose**, com funcionalidades **simuladas em memória** (sem backend).
+> Documentação completa em [`DOCUMENTACAO.md`](DOCUMENTACAO.md).
 
 ---
 
@@ -99,18 +101,18 @@ Dishfy makes use of key mobile platform features:
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture (esta entrega)
 
-The application follows the **MVVM (Model-View-ViewModel)** architecture:
+Esta versão segue **MVVM** com **Jetpack Compose**:
 
 ```text
-UI (Compose)
-   ↓
+Compose UI (View)
+   ↕  StateFlow
 ViewModel
-   ↓
-Use Cases (Business Logic)
-   ↓
-Repository
-   ↓
-API / Firebase
+   ↕
+RecipeRepository (memória)
+   ↕
+Model (Recipe, User, Comment, Ingredient)
 ```
+
+Detalhes em [`DOCUMENTACAO.md`](DOCUMENTACAO.md).
