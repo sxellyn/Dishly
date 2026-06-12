@@ -25,11 +25,6 @@ import androidx.compose.ui.unit.sp
 import com.dishly.app.model.Recipe
 import com.dishly.app.ui.theme.*
 
-/**
- * Top bar built with Material3 [CenterAlignedTopAppBar], keeping the Dishly look:
- * purple background, rounded bottom corners, white logo + wordmark (or a title) and an
- * optional white back button on the left.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DishlyTopBar(

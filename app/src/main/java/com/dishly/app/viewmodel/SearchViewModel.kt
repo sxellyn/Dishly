@@ -53,7 +53,6 @@ class SearchViewModel : ViewModel() {
         )
     }
 
-    /** Visual toggle only — pink button when active (API wiring later). */
     fun toggleEmptyFridge() {
         _uiState.value = _uiState.value.copy(
             emptyFridgeMode = !_uiState.value.emptyFridgeMode

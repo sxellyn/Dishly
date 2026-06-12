@@ -7,7 +7,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.dishly.app.R
 
-/** Logo color variants (bowl + spoon), depending on the screen background. */
 enum class LogoVariant { White, Pink, Purple }
 
 @Composable

@@ -23,12 +23,10 @@ class AuthViewModel : ViewModel() {
 
     fun signIn() {
         val state = _uiState.value
-        // Block login while the username or password fields are empty.
         if (state.username.isBlank() || state.password.isBlank()) {
             _uiState.value = state.copy(error = "Please fill in your username and password")
             return
         }
-        // No real authentication: go straight to the home screen.
         _uiState.value = state.copy(navigateToMain = true)
     }
 
@@ -42,7 +40,6 @@ class AuthViewModel : ViewModel() {
             _uiState.value = state.copy(error = "Passwords do not match")
             return
         }
-        // No real authentication: go straight to the home screen.
         _uiState.value = state.copy(navigateToMain = true)
     }
 

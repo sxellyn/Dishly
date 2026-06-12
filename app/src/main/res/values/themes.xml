@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema base da Activity (Compose cuida da UI; aqui só status bar e fundo). -->
     <style name="Theme.Dishly" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/white</item>
         <item name="android:statusBarColor">@color/purple_primary</item>

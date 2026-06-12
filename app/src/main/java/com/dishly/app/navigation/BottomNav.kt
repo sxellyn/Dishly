@@ -24,7 +24,6 @@ import com.dishly.app.ui.theme.NavInactive
 import com.dishly.app.ui.theme.PurplePrimary
 import com.dishly.app.ui.theme.White
 
-/** Describes each bottom navigation button: label, icon and the route it points to. */
 sealed class BottomNavItem(val title: String, val icon: ImageVector, val route: TabRoute) {
     data object Search : BottomNavItem("Search", Icons.Default.Search, TabRoute.Search)
     data object Favorites : BottomNavItem("Favorites", Icons.Default.Favorite, TabRoute.Favorites)
@@ -43,8 +42,6 @@ fun BottomNavBar(navController: NavHostController, items: List<BottomNavItem>) {
                 selected = currentDestination?.hierarchy?.any { it.hasRoute(item.route::class) } == true,
                 onClick = {
                     navController.navigate(item.route) {
-                        // Keep a single instance and return to the start destination (Home)
-                        // when the back button is pressed.
                         navController.graph.startDestinationRoute?.let { start ->
                             popUpTo(start) { saveState = true }
                         }

@@ -94,10 +94,9 @@ fun MainScreen(
     val activity = context as? Activity
     val tabNavController = rememberNavController()
 
-    // Ask for the notification permission once we reach the main screen (Android 13+).
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { /* nothing else to do here */ }
+        onResult = { }
     )
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -108,7 +107,6 @@ fun MainScreen(
     val navBackStackEntry by tabNavController.currentBackStackEntryAsState()
     val onHome = navBackStackEntry?.destination?.hierarchy?.any { it.hasRoute(TabRoute.Home::class) } ?: true
 
-    // The top-bar back arrows always return to the Home tab (they never log out / exit).
     val goToHome: () -> Unit = {
         tabNavController.navigate(TabRoute.Home) {
             tabNavController.graph.startDestinationRoute?.let { start ->
@@ -118,7 +116,6 @@ fun MainScreen(
             restoreState = true
         }
     }
-    // Only the hardware back button can leave the app: from a tab it goes Home, from Home it exits.
     BackHandler { if (!onHome) goToHome() else activity?.finish() }
 
     val items = listOf(
@@ -185,7 +182,6 @@ fun SearchScreen(
     LaunchedEffect(Unit) { viewModel.load() }
 
     Column(modifier = Modifier.fillMaxSize().background(White)) {
-        // No back arrow on the results screen (the "Select ingredients" link goes back).
         DishlyTopBar(onBack = if (state.showResults) null else onBack)
         if (!state.showResults) {
             Column(
@@ -305,7 +301,6 @@ fun SearchScreen(
                     }
                 }
                 Row(modifier = Modifier.padding(top = 20.dp)) {
-                    // Toggle button: purple when off, pink (Magenta) when "empty fridge" mode is on.
                     DishlyPrimaryButton(
                         text = "Empty Fridge!",
                         onClick = viewModel::toggleEmptyFridge,

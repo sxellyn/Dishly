@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Adaptive icon FOREGROUND layer.
-  The 108dp viewport has an inner ~72dp "safe zone" that is never clipped by the
-  launcher mask, so the photo is centered at 70dp and keeps a margin on every side.
--->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:width="70dp"

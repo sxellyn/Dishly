@@ -5,10 +5,6 @@ import com.dishly.app.model.Comment
 import com.dishly.app.model.Recipe
 import com.dishly.app.model.User
 
-/**
- * Data layer (MVVM) — in-memory repository, no backend.
- * ViewModels consume this class; the UI never accesses data directly.
- */
 object RecipeRepository {
 
     val currentUser = User(
@@ -146,7 +142,6 @@ object RecipeRepository {
         )
     )
 
-    /** Labels for ingredient chips on the Search screen (selection is UI-only until API is wired). */
     val pickerIngredients: List<String> = listOf(
         "Egg", "Tomato", "Lettuce", "Onion", "Garlic", "Flour", "Pepper", "Beef",
         "Banana", "Rice", "Olive oil", "Cream cheese", "Lemon", "Carrot",

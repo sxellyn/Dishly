@@ -1,12 +1,5 @@
 package com.dishly.app.model
 
-/**
- * Model (MVVM domain) — core entity: a recipe.
- *
- * @property imageRes drawable used as the recipe "photo" (colored placeholder,
- *  since the app runs offline, without network/backend).
- * @property comments mutable list of comments shown on the Recipe Page.
- */
 data class Recipe(
     val id: Int,
     val title: String,
