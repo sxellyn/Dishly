@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +19,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import android.net.Uri
+import coil.compose.AsyncImage
+import java.io.File
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,10 +77,13 @@ fun DishlyPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     backgroundColor: Color = Magenta,
-    contentColor: Color = White
+    contentColor: Color = White,
+    enabled: Boolean = true,
+    isLoading: Boolean = false
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled && !isLoading,
         modifier = modifier.height(50.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
@@ -84,7 +91,15 @@ fun DishlyPrimaryButton(
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
-        Text(text, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = contentColor,
+                strokeWidth = 2.dp
+            )
+        } else {
+            Text(text, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        }
     }
 }
 
@@ -98,6 +113,48 @@ fun DishlyOutlinedButton(text: String, onClick: () -> Unit, modifier: Modifier =
         colors = ButtonDefaults.outlinedButtonColors(contentColor = PurplePrimary)
     ) {
         Text(text, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+fun ProfileAvatar(
+    photoUrl: String?,
+    modifier: Modifier = Modifier,
+    photoUri: Uri? = null
+) {
+    val imageModel: Any? = when {
+        photoUri != null -> photoUri
+        photoUrl != null -> when {
+            photoUrl.startsWith("content://") -> null
+            photoUrl.startsWith("/") -> File(photoUrl)
+            photoUrl.startsWith("file://") -> photoUrl
+            else -> photoUrl
+        }
+        else -> null
+    }
+    if (imageModel != null) {
+        AsyncImage(
+            model = imageModel,
+            contentDescription = "Profile photo",
+            modifier = modifier
+                .clip(CircleShape)
+                .background(ChipBg),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .clip(CircleShape)
+                .background(ChipBg),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.Person,
+                contentDescription = "Profile photo",
+                tint = PurplePrimary,
+                modifier = Modifier.fillMaxSize(0.5f)
+            )
+        }
     }
 }
 

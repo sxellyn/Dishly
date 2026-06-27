@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.dishly.app.data.auth.AuthRepository
 import com.dishly.app.ui.screens.*
 
 @Composable
@@ -12,8 +13,9 @@ fun DishlyNavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Route.Splash) {
         composable<Route.Splash> {
             SplashScreen(
-                onNavigate = {
-                    navController.navigate(Route.Onboarding) {
+                onNavigate = { isLoggedIn ->
+                    val destination = if (isLoggedIn) Route.Main else Route.Onboarding
+                    navController.navigate(destination) {
                         popUpTo(Route.Splash) { inclusive = true }
                     }
                 }
@@ -48,6 +50,7 @@ fun DishlyNavGraph(navController: NavHostController) {
                 onRecipeClick = { id -> navController.navigate(Route.Recipe(id)) },
                 onEditProfile = { navController.navigate(Route.EditProfile) },
                 onLogout = {
+                    AuthRepository.signOut()
                     navController.navigate(Route.SignIn) {
                         popUpTo(Route.Main) { inclusive = true }
                     }

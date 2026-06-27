@@ -11,7 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import com.dishly.app.ui.components.DishlyLogo
+import com.dishly.app.data.auth.AuthRepository
 import com.dishly.app.ui.components.DishlyWordmark
 import com.dishly.app.ui.components.LogoVariant
 import com.dishly.app.ui.theme.LightPink
@@ -22,10 +24,12 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(onNavigate: () -> Unit) {
+fun SplashScreen(onNavigate: (isLoggedIn: Boolean) -> Unit) {
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         delay(2000)
-        onNavigate()
+        AuthRepository.syncLocalUserFromSession(context)
+        onNavigate(AuthRepository.isLoggedIn())
     }
 
     Box(

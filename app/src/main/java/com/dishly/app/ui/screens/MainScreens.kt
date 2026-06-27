@@ -1,6 +1,8 @@
 package com.dishly.app.ui.screens
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
@@ -48,6 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -427,7 +432,19 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
             HorizontalDivider(color = DividerColor)
-            Text("About Dishly", modifier = Modifier.padding(vertical = 16.dp), fontSize = 16.sp)
+            Text(
+                text = "About Dishly",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/sxellyn/Dishly"))
+                        )
+                    }
+                    .padding(vertical = 16.dp),
+                fontSize = 16.sp,
+                color = PurplePrimary
+            )
         }
     }
 }
@@ -453,7 +470,12 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { viewModel.load() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.load()
+        }
+    }
     val user = state.user
 
     Column(modifier = Modifier.fillMaxSize().background(White)) {
@@ -466,23 +488,24 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SectionTitle("My Profile")
-            Icon(
-                Icons.Default.Person,
-                null,
-                tint = PurplePrimary,
+            ProfileAvatar(
+                photoUrl = user.photoUrl,
                 modifier = Modifier
                     .padding(top = 16.dp)
                     .size(120.dp)
-                    .clip(CircleShape)
-                    .background(ChipBg)
-                    .padding(28.dp)
             )
             Text(
-                user.username,
+                user.name,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = PurplePrimary,
                 modifier = Modifier.padding(top = 16.dp)
+            )
+            Text(
+                user.username,
+                fontSize = 16.sp,
+                color = TextGray,
+                modifier = Modifier.padding(top = 4.dp)
             )
             DishlyPrimaryButton(
                 text = "Edit Profile",

@@ -170,8 +170,9 @@ object RecipeRepository {
         return comment
     }
 
-    fun updateUser(name: String, username: String) {
+    fun updateUser(name: String, username: String, photoUrl: String? = currentUser.photoUrl) {
         currentUser.name = name
         currentUser.username = username
+        currentUser.photoUrl = photoUrl
     }
 }

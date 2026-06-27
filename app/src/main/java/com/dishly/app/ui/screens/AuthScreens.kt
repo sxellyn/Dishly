@@ -67,7 +67,23 @@ fun SignInScreen(
             )
             Text("Remember me", color = TextGray, fontSize = 13.sp)
             Spacer(Modifier.weight(1f))
-            Text("Forgot Your Password?", color = TextGray, fontSize = 12.sp)
+            Text(
+                "Forgot Your Password?",
+                color = TextGray,
+                fontSize = 12.sp,
+                modifier = Modifier.clickable(onClick = viewModel::openForgotPasswordDialog)
+            )
+        }
+        if (state.showForgotPasswordDialog) {
+            ForgotPasswordDialog(
+                username = state.forgotPasswordUsername,
+                onUsernameChange = viewModel::onForgotPasswordUsernameChange,
+                error = state.forgotPasswordError,
+                message = state.forgotPasswordMessage,
+                isLoading = state.isResetLoading,
+                onSend = viewModel::sendPasswordReset,
+                onDismiss = viewModel::closeForgotPasswordDialog
+            )
         }
         state.error?.let {
             Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
@@ -78,7 +94,8 @@ fun SignInScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp),
-            backgroundColor = PurplePrimary
+            backgroundColor = PurplePrimary,
+            isLoading = state.isLoading
         )
         Row(
             modifier = Modifier
@@ -120,6 +137,8 @@ fun SignUpScreen(
         Spacer(Modifier.height(18.dp))
         DishlyTextField(state.username, viewModel::onUsernameChange, "Username")
         Spacer(Modifier.height(14.dp))
+        DishlyTextField(state.email, viewModel::onEmailChange, "Email")
+        Spacer(Modifier.height(14.dp))
         DishlyTextField(state.password, viewModel::onPasswordChange, "Password", isPassword = true)
         Spacer(Modifier.height(14.dp))
         DishlyTextField(state.confirmPassword, viewModel::onConfirmPasswordChange, "Confirm Password", isPassword = true)
@@ -132,7 +151,8 @@ fun SignUpScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 26.dp),
-            backgroundColor = PurplePrimary
+            backgroundColor = PurplePrimary,
+            isLoading = state.isLoading
         )
         Row(
             modifier = Modifier
@@ -149,6 +169,60 @@ fun SignUpScreen(
             )
         }
     }
+}
+
+@Composable
+private fun ForgotPasswordDialog(
+    username: String,
+    onUsernameChange: (String) -> Unit,
+    error: String?,
+    message: String?,
+    isLoading: Boolean,
+    onSend: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        title = {
+            Text("Reset password", fontWeight = FontWeight.Bold, color = PurplePrimary)
+        },
+        text = {
+            Column {
+                Text(
+                    "Enter your username. A reset link will be sent to your registered email.",
+                    color = TextGray,
+                    fontSize = 13.sp
+                )
+                DishlyTextField(
+                    value = username,
+                    onValueChange = onUsernameChange,
+                    label = "Username",
+                    modifier = Modifier.padding(top = 12.dp),
+                    enabled = !isLoading
+                )
+                error?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+                }
+                message?.let {
+                    Text(it, color = PurplePrimary, modifier = Modifier.padding(top = 8.dp))
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onSend, enabled = !isLoading) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Send", color = Magenta, fontWeight = FontWeight.Bold)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isLoading) {
+                Text("Cancel", color = TextGray)
+            }
+        }
+    )
 }
 
 @Composable

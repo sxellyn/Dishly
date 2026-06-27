@@ -36,3 +36,16 @@ local.properties
 captures/
 .externalNativeBuild/
 .cxx/
+
+# Secrets / local config (do not commit)
+app/google-services.json
+google-services.json
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+.env
+.env.*
+
+# Gradle Wrapper (jar must be committed)
+!gradle/wrapper/gradle-wrapper.jar
