@@ -22,9 +22,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,6 +60,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.dishly.app.api.MealService
 import com.dishly.app.navigation.BottomNavBar
 import com.dishly.app.navigation.BottomNavItem
 import com.dishly.app.navigation.TabRoute
@@ -79,7 +80,9 @@ private fun RecipeGrid(recipes: List<Recipe>, onRecipeClick: (Int) -> Unit) {
                 row.forEach { recipe ->
                     RecipeCard(
                         recipe,
-                        onClick = { onRecipeClick(recipe.id) },
+                        onClick = {
+                            if (!recipe.isLoading) onRecipeClick(recipe.id)
+                        },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -91,6 +94,7 @@ private fun RecipeGrid(recipes: List<Recipe>, onRecipeClick: (Int) -> Unit) {
 
 @Composable
 fun MainScreen(
+    mealService: MealService,
     onRecipeClick: (Int) -> Unit,
     onEditProfile: () -> Unit,
     onLogout: () -> Unit
@@ -140,9 +144,13 @@ fun MainScreen(
             startDestination = TabRoute.Home,
             modifier = Modifier.padding(padding)
         ) {
-            composable<TabRoute.Home> { HomeScreen(onRecipeClick) }
-            composable<TabRoute.Search> { SearchScreen(onRecipeClick, onBack = goToHome) }
-            composable<TabRoute.Favorites> { FavoritesScreen(onRecipeClick, onBack = goToHome) }
+            composable<TabRoute.Home> { HomeScreen(onRecipeClick, mealService) }
+            composable<TabRoute.Search> {
+                SearchScreen(onRecipeClick, onBack = goToHome, mealService = mealService)
+            }
+            composable<TabRoute.Favorites> {
+                FavoritesScreen(onRecipeClick, onBack = goToHome, mealService = mealService)
+            }
             composable<TabRoute.Settings> { SettingsScreen(onBack = goToHome) }
             composable<TabRoute.Profile> { ProfileScreen(onEditProfile, onLogout, onBack = goToHome) }
         }
@@ -152,10 +160,18 @@ fun MainScreen(
 @Composable
 fun HomeScreen(
     onRecipeClick: (Int) -> Unit,
-    viewModel: HomeViewModel = viewModel()
+    mealService: MealService,
+    viewModel: HomeViewModel = viewModel(factory = HomeViewModelFactory(mealService))
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { viewModel.load() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(Unit) { viewModel.loadPopular() }
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.loadRecent()
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(White)) {
         DishlyTopBar()
@@ -165,13 +181,23 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(14.dp)
         ) {
+            state.error?.let { message ->
+                Text(
+                    text = message,
+                    color = Magenta,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
             SectionTitle("Popular Recipes")
             SectionSubtitle("the top favorites of everybody in one place!")
             RecipeGrid(state.popularRecipes, onRecipeClick)
-            Spacer(Modifier.height(16.dp))
-            SectionTitle("Latest Recipes")
-            SectionSubtitle("want to cook it again? here they are!")
-            RecipeGrid(state.latestRecipes, onRecipeClick)
+            if (state.showLatestSection) {
+                Spacer(Modifier.height(16.dp))
+                SectionTitle("Latest Recipes")
+                SectionSubtitle("want to cook it again? here they are!")
+                RecipeGrid(state.latestRecipes, onRecipeClick)
+            }
         }
     }
 }
@@ -181,10 +207,19 @@ fun HomeScreen(
 fun SearchScreen(
     onRecipeClick: (Int) -> Unit,
     onBack: () -> Unit,
-    viewModel: SearchViewModel = viewModel()
+    mealService: MealService,
+    viewModel: SearchViewModel = viewModel(factory = SearchViewModelFactory(mealService))
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.load() }
+
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearError()
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(White)) {
         DishlyTopBar(onBack = if (state.showResults) null else onBack)
@@ -338,7 +373,21 @@ fun SearchScreen(
                     SectionSubtitle("Check out these recipes:")
                 }
                 items(state.results) { recipe ->
-                    RecipeListItem(recipe, onClick = { onRecipeClick(recipe.id) })
+                    RecipeListItem(
+                        recipe,
+                        onClick = {
+                            if (!recipe.isLoading) onRecipeClick(recipe.id)
+                        }
+                    )
+                }
+                if (!state.isLoading && state.results.isEmpty()) {
+                    item {
+                        Text(
+                            "No recipes found with all selected ingredients.",
+                            color = TextGray,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
+                    }
                 }
             }
         }
@@ -349,10 +398,17 @@ fun SearchScreen(
 fun FavoritesScreen(
     onRecipeClick: (Int) -> Unit,
     onBack: () -> Unit,
-    viewModel: FavoritesViewModel = viewModel()
+    mealService: MealService,
+    viewModel: FavoritesViewModel = viewModel(factory = FavoritesViewModelFactory(mealService))
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { viewModel.load() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.load()
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(White)) {
         DishlyTopBar(onBack = onBack)
@@ -365,19 +421,38 @@ fun FavoritesScreen(
             SectionTitle("Your Favorite Recipes")
             SectionSubtitle("check your must cooks here!")
         }
-        if (state.favorites.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("You have no favorite recipes yet.", color = TextGray)
+        when {
+            state.isLoading -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    gridItems(state.favorites) { recipe ->
+                        RecipeCard(
+                            recipe,
+                            onClick = { },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
             }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                gridItems(state.favorites) { recipe ->
-                    RecipeCard(recipe, onClick = { onRecipeClick(recipe.id) })
+            state.favorites.isEmpty() -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("You have no favorite recipes yet.", color = TextGray)
+                }
+            }
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    gridItems(state.favorites) { recipe ->
+                        RecipeCard(recipe, onClick = { onRecipeClick(recipe.id) })
+                    }
                 }
             }
         }

@@ -1,15 +1,19 @@
 package com.dishly.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.dishly.app.api.MealService
 import com.dishly.app.data.auth.AuthRepository
 import com.dishly.app.ui.screens.*
 
 @Composable
 fun DishlyNavGraph(navController: NavHostController) {
+    val mealService = remember { MealService() }
+
     NavHost(navController = navController, startDestination = Route.Splash) {
         composable<Route.Splash> {
             SplashScreen(
@@ -47,6 +51,7 @@ fun DishlyNavGraph(navController: NavHostController) {
         }
         composable<Route.Main> {
             MainScreen(
+                mealService = mealService,
                 onRecipeClick = { id -> navController.navigate(Route.Recipe(id)) },
                 onEditProfile = { navController.navigate(Route.EditProfile) },
                 onLogout = {
@@ -61,6 +66,7 @@ fun DishlyNavGraph(navController: NavHostController) {
             val recipe = entry.toRoute<Route.Recipe>()
             RecipeDetailScreen(
                 recipeId = recipe.recipeId,
+                mealService = mealService,
                 onBack = { navController.popBackStack() }
             )
         }

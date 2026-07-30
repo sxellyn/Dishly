@@ -1,4 +1,4 @@
-apackage com.dishly.app.data.auth
+package com.dishly.app.data.auth
 
 import android.content.Context
 import android.net.Uri

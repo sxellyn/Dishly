@@ -2,7 +2,6 @@ package com.dishly.app.ui.screens
 
 import android.content.Intent
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.dishly.app.api.MealService
 import com.dishly.app.model.Comment
 import com.dishly.app.ui.components.DishlyTopBar
 import com.dishly.app.ui.components.SectionTitle
@@ -36,8 +37,11 @@ import com.dishly.app.viewmodel.RecipeDetailViewModel
 @Composable
 fun RecipeDetailScreen(
     recipeId: Int,
+    mealService: MealService,
     onBack: () -> Unit,
-    viewModel: RecipeDetailViewModel = viewModel(factory = RecipeDetailViewModel.Factory(recipeId))
+    viewModel: RecipeDetailViewModel = viewModel(
+        factory = RecipeDetailViewModel.Factory(recipeId, mealService)
+    )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -51,10 +55,23 @@ fun RecipeDetailScreen(
         }
     }
 
+    if (state.isLoading) {
+        Column(modifier = Modifier.fillMaxSize().background(White)) {
+            DishlyTopBar(onBack = onBack)
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Magenta)
+            }
+        }
+        return
+    }
+
     val recipe = state.recipe
     if (recipe == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Recipe not found")
+        Column(modifier = Modifier.fillMaxSize().background(White)) {
+            DishlyTopBar(onBack = onBack)
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Recipe not found")
+            }
         }
         return
     }
@@ -62,12 +79,21 @@ fun RecipeDetailScreen(
     Column(modifier = Modifier.fillMaxSize().background(White)) {
         DishlyTopBar(onBack = onBack)
         Box(modifier = Modifier.height(240.dp)) {
-            Image(
-                painter = painterResource(recipe.imageRes),
-                contentDescription = recipe.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+            if (!recipe.imageUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = recipe.imageUrl,
+                    contentDescription = recipe.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(recipe.imageRes),
+                    contentDescription = recipe.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
             IconButton(
                 onClick = viewModel::toggleFavorite,
                 modifier = Modifier

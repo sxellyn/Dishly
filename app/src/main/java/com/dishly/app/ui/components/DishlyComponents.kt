@@ -204,52 +204,88 @@ fun SectionSubtitle(text: String) {
 }
 
 @Composable
+private fun RecipeImage(
+    recipe: Recipe,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
+) {
+    if (!recipe.imageUrl.isNullOrBlank()) {
+        AsyncImage(
+            model = recipe.imageUrl,
+            contentDescription = recipe.title,
+            modifier = modifier,
+            contentScale = contentScale
+        )
+    } else {
+        androidx.compose.foundation.Image(
+            painter = painterResource(recipe.imageRes),
+            contentDescription = recipe.title,
+            modifier = modifier,
+            contentScale = contentScale
+        )
+    }
+}
+
+@Composable
 fun RecipeCard(recipe: Recipe, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .height(190.dp)
-            .clickable(onClick = onClick),
+            .clickable(enabled = !recipe.isLoading, onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            androidx.compose.foundation.Image(
-                painter = painterResource(recipe.imageRes),
-                contentDescription = recipe.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            Row(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .background(PurplePrimary, RoundedCornerShape(6.dp))
-                    .padding(horizontal = 6.dp, vertical = 3.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(Icons.Default.Favorite, null, tint = White, modifier = Modifier.size(12.dp))
-                Spacer(Modifier.width(4.dp))
-                Text(recipe.rating.toString(), color = White, fontSize = 11.sp)
-            }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .background(
-                        Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(0.75f)))
+            if (recipe.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(DividerColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = Magenta,
+                        modifier = Modifier.size(36.dp),
+                        strokeWidth = 3.dp
                     )
-            )
-            Text(
-                text = recipe.title,
-                color = White,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(8.dp)
-            )
+                }
+            } else {
+                RecipeImage(
+                    recipe = recipe,
+                    modifier = Modifier.fillMaxSize()
+                )
+                Row(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .background(PurplePrimary, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Favorite, null, tint = White, modifier = Modifier.size(12.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(recipe.rating.toString(), color = White, fontSize = 11.sp)
+                }
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(70.dp)
+                        .background(
+                            Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(0.75f)))
+                        )
+                )
+                Text(
+                    text = recipe.title,
+                    color = White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp)
+                )
+            }
         }
     }
 }
@@ -261,7 +297,7 @@ fun RecipeListItem(recipe: Recipe, onClick: () -> Unit) {
             .fillMaxWidth()
             .height(148.dp)
             .padding(vertical = 4.dp)
-            .clickable(onClick = onClick),
+            .clickable(enabled = !recipe.isLoading, onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
@@ -271,53 +307,69 @@ fun RecipeListItem(recipe: Recipe, onClick: () -> Unit) {
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            androidx.compose.foundation.Image(
-                painter = painterResource(recipe.imageRes),
-                contentDescription = recipe.title,
-                modifier = Modifier
-                    .size(112.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
+            if (recipe.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .size(112.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DividerColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = Magenta,
+                        modifier = Modifier.size(32.dp),
+                        strokeWidth = 3.dp
+                    )
+                }
+            } else {
+                RecipeImage(
+                    recipe = recipe,
+                    modifier = Modifier
+                        .size(112.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+            }
             Spacer(Modifier.width(10.dp))
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        recipe.title,
-                        color = PurplePrimary,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        recipe.description,
-                        color = TextDark,
-                        fontSize = 12.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-                Spacer(Modifier.height(4.dp))
-                Button(
-                    onClick = onClick,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .width(96.dp)
-                        .height(36.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Magenta,
-                        contentColor = White
-                    ),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Text("Cook!", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                if (!recipe.isLoading) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            recipe.title,
+                            color = PurplePrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            recipe.description,
+                            color = TextDark,
+                            fontSize = 12.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Button(
+                        onClick = onClick,
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .width(96.dp)
+                            .height(36.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Magenta,
+                            contentColor = White
+                        ),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Text("Cook!", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    }
                 }
             }
         }
