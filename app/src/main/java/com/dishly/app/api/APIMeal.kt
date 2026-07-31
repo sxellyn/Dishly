@@ -1,5 +1,6 @@
 package com.dishly.app.api
 
+import com.dishly.app.model.Ingredient
 import com.dishly.app.model.Recipe
 
 data class APIMealsResponse(
@@ -62,7 +63,7 @@ data class APIMeal(
 )
 
 fun APIMeal.toRecipe(): Recipe {
-    val ingredients = collectIngredients()
+    val ingredientItems = collectIngredientItems()
     val steps = strInstructions
         ?.split("\r\n", "\n")
         ?.map { it.trim() }
@@ -77,7 +78,8 @@ fun APIMeal.toRecipe(): Recipe {
         difficulty = "—",
         imageUrl = strMealThumb ?: strThumb,
         description = strDescription ?: strInstructions.orEmpty(),
-        ingredients = ingredients,
+        ingredients = ingredientItems.map { it.display() },
+        ingredientItems = ingredientItems,
         steps = if (steps.isEmpty() && !strInstructions.isNullOrBlank()) {
             listOf(strInstructions!!)
         } else {
@@ -112,12 +114,12 @@ fun APIMeal.containsIngredient(search: String): Boolean {
 fun APIMeal.containsAllIngredients(searches: List<String>): Boolean =
     searches.all { containsIngredient(it) }
 
-private fun APIMeal.collectIngredients(): List<String> {
+private fun APIMeal.collectIngredientItems(): List<Ingredient> {
     return (1..20).mapNotNull { index ->
         val ingredient = ingredientAt(index)?.trim().orEmpty()
         if (ingredient.isEmpty()) return@mapNotNull null
         val measure = measureAt(index)?.trim().orEmpty()
-        if (measure.isEmpty()) ingredient else "$measure $ingredient"
+        Ingredient(name = ingredient, measure = measure)
     }
 }
 

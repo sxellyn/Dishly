@@ -9,6 +9,7 @@ sealed interface Route {
     @Serializable data object SignUp : Route
     @Serializable data object Main : Route
     @Serializable data class Recipe(val recipeId: Int) : Route
+    @Serializable data class ShoppingList(val recipeId: Int) : Route
     @Serializable data object EditProfile : Route
 }
 

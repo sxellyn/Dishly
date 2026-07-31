@@ -1,6 +1,7 @@
 package com.dishly.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -8,11 +9,27 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.dishly.app.api.MealService
 import com.dishly.app.data.auth.AuthRepository
+import com.dishly.app.notifications.NotificationNavigator
 import com.dishly.app.ui.screens.*
 
 @Composable
 fun DishlyNavGraph(navController: NavHostController) {
     val mealService = remember { MealService() }
+
+    fun openPendingRecipeIfPossible() {
+        if (!AuthRepository.isLoggedIn()) return
+        val recipeId = NotificationNavigator.pendingRecipeId ?: return
+        NotificationNavigator.consumePendingRecipeId()
+        navController.navigate(Route.Recipe(recipeId)) {
+            launchSingleTop = true
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        NotificationNavigator.events.collect {
+            openPendingRecipeIfPossible()
+        }
+    }
 
     NavHost(navController = navController, startDestination = Route.Splash) {
         composable<Route.Splash> {
@@ -21,6 +38,9 @@ fun DishlyNavGraph(navController: NavHostController) {
                     val destination = if (isLoggedIn) Route.Main else Route.Onboarding
                     navController.navigate(destination) {
                         popUpTo(Route.Splash) { inclusive = true }
+                    }
+                    if (isLoggedIn) {
+                        openPendingRecipeIfPossible()
                     }
                 }
             )
@@ -34,6 +54,7 @@ fun DishlyNavGraph(navController: NavHostController) {
                     navController.navigate(Route.Main) {
                         popUpTo(Route.SignIn) { inclusive = true }
                     }
+                    openPendingRecipeIfPossible()
                 },
                 onSignUp = { navController.navigate(Route.SignUp) },
                 onBack = { navController.popBackStack() }
@@ -46,6 +67,7 @@ fun DishlyNavGraph(navController: NavHostController) {
                     navController.navigate(Route.Main) {
                         popUpTo(Route.SignIn) { inclusive = true }
                     }
+                    openPendingRecipeIfPossible()
                 }
             )
         }
@@ -66,6 +88,17 @@ fun DishlyNavGraph(navController: NavHostController) {
             val recipe = entry.toRoute<Route.Recipe>()
             RecipeDetailScreen(
                 recipeId = recipe.recipeId,
+                mealService = mealService,
+                onBack = { navController.popBackStack() },
+                onOpenShoppingList = { id ->
+                    navController.navigate(Route.ShoppingList(id))
+                }
+            )
+        }
+        composable<Route.ShoppingList> { entry ->
+            val shopping = entry.toRoute<Route.ShoppingList>()
+            ShoppingListScreen(
+                recipeId = shopping.recipeId,
                 mealService = mealService,
                 onBack = { navController.popBackStack() }
             )

@@ -12,6 +12,7 @@ data class Recipe(
     val imageUrl: String? = null,
     val description: String,
     val ingredients: List<String>,
+    val ingredientItems: List<Ingredient> = emptyList(),
     val steps: List<String>,
     val tags: List<String> = emptyList(),
     val comments: MutableList<Comment> = mutableListOf(),
@@ -29,6 +30,7 @@ data class Recipe(
             difficulty = "—",
             description = "",
             ingredients = emptyList(),
+            ingredientItems = emptyList(),
             steps = emptyList(),
             isLoading = true
         )

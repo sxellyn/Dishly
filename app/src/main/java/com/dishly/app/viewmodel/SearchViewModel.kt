@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dishly.app.api.MealService
 import com.dishly.app.api.toRecipe
+import com.dishly.app.data.PantryRepository
 import com.dishly.app.data.RecipeRepository
 import com.dishly.app.data.RecipeStatsRepository
 import com.dishly.app.model.Recipe
@@ -33,6 +34,12 @@ class SearchViewModel(
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
     fun load() {
+        viewModelScope.launch {
+            val pantry = PantryRepository.getIngredientNames()
+            if (pantry.isNotEmpty()) {
+                _uiState.value = _uiState.value.copy(selectedIngredientNames = pantry)
+            }
+        }
         service.ingredientList { ingredients ->
             val names = ingredients
                 .mapNotNull { it.strIngredient }
@@ -59,6 +66,7 @@ class SearchViewModel(
             searchQuery = "",
             ingredientSuggestions = emptyList()
         )
+        viewModelScope.launch { PantryRepository.addIngredient(name) }
     }
 
     fun removeSelectedIngredient(name: String) {
@@ -71,6 +79,7 @@ class SearchViewModel(
             selectedIngredientNames = selected,
             ingredientSuggestions = suggestions
         )
+        viewModelScope.launch { PantryRepository.removeIngredient(name) }
     }
 
     fun toggleEmptyFridge() {
@@ -84,6 +93,9 @@ class SearchViewModel(
         if (ingredients.isEmpty()) {
             _uiState.value = _uiState.value.copy(error = "Select at least one ingredient")
             return
+        }
+        viewModelScope.launch {
+            PantryRepository.setIngredients(ingredients.toSet())
         }
         _uiState.value = _uiState.value.copy(
             showResults = true,

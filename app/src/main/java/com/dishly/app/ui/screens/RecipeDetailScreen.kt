@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +30,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.dishly.app.api.MealService
 import com.dishly.app.model.Comment
+import com.dishly.app.notifications.RecipeReminderScheduler
+import com.dishly.app.ui.components.DishlyPrimaryButton
 import com.dishly.app.ui.components.DishlyTopBar
 import com.dishly.app.ui.components.SectionTitle
 import com.dishly.app.ui.theme.*
@@ -39,6 +42,7 @@ fun RecipeDetailScreen(
     recipeId: Int,
     mealService: MealService,
     onBack: () -> Unit,
+    onOpenShoppingList: (Int) -> Unit = {},
     viewModel: RecipeDetailViewModel = viewModel(
         factory = RecipeDetailViewModel.Factory(recipeId, mealService)
     )
@@ -47,6 +51,16 @@ fun RecipeDetailScreen(
     val context = LocalContext.current
 
     LaunchedEffect(recipeId) { viewModel.load() }
+
+    LaunchedEffect(state.recipe?.id, state.recipe?.title) {
+        val recipe = state.recipe ?: return@LaunchedEffect
+        if (recipe.isLoading || recipe.id <= 0) return@LaunchedEffect
+        RecipeReminderScheduler.schedule(
+            context = context.applicationContext,
+            recipeId = recipe.id,
+            recipeTitle = recipe.title
+        )
+    }
 
     LaunchedEffect(state.message) {
         state.message?.let {
@@ -156,6 +170,30 @@ fun RecipeDetailScreen(
             SectionTitle("Ingredients")
             recipe.ingredients.forEach { ing ->
                 Text("•  $ing", modifier = Modifier.padding(vertical = 4.dp), fontSize = 14.sp)
+            }
+
+            Spacer(Modifier.height(14.dp))
+            DishlyPrimaryButton(
+                text = "Generate shopping list",
+                onClick = { onOpenShoppingList(recipe.id) },
+                modifier = Modifier.fillMaxWidth(),
+                backgroundColor = PurplePrimary
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Icon(
+                    Icons.Default.ShoppingCart,
+                    contentDescription = null,
+                    tint = TextGray,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    " Uses what you selected in Search as your pantry",
+                    color = TextGray,
+                    fontSize = 12.sp
+                )
             }
 
             SectionTitle("Preparation steps")

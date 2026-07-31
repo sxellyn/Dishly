@@ -243,6 +243,12 @@ fun SearchScreen(
                         color = White,
                         fontWeight = FontWeight.Bold
                     )
+                    Text(
+                        "These are saved as your pantry for the shopping list.",
+                        color = White.copy(alpha = 0.85f),
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
+                    )
                     OutlinedTextField(
                         value = state.searchQuery,
                         onValueChange = viewModel::onSearchQueryChange,
